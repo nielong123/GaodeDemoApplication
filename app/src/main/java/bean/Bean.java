@@ -1,12 +1,13 @@
 package bean;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by nl on 2016/11/21.
  */
 
-public class Bean {
+public class Bean implements Serializable{
 
 
     /**
@@ -61,7 +62,7 @@ public class Bean {
         this.ReturnCode = ReturnCode;
     }
 
-    public static class ReturnValueBean {
+    public static class ReturnValueBean implements Serializable{
         private int PageIndex;
         private int PageSize;
         private int TotalCount;
@@ -120,7 +121,7 @@ public class Bean {
             this.DataList = DataList;
         }
 
-        public static class DataListBean {
+        public static class DataListBean implements Serializable{
             private String PhoneNum;
             private double Lat;
             private double Lon;

@@ -136,7 +136,7 @@ public final class TrajectoryActivity extends Activity implements View.OnClickLi
         if (beanList.size() > 2) {
             displayPolyline();
             displayMarkers();
-            runnable = new TrajectRunnable(beanList, trajectListener);
+            runnable = new TrajectRunnable(beanList.size(), trajectListener);
             runnable.run();
         }
     }
@@ -260,4 +260,10 @@ public final class TrajectoryActivity extends Activity implements View.OnClickLi
         }
         endMarker.setPosition(endLatLng);
     }
+
+//    private void upDataMoveMark(int index) {
+//        if () {
+//
+//        }
+//    }
 }

@@ -6,10 +6,6 @@ import android.os.Looper;
 import android.os.Message;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.List;
-
-import bean.Bean.ReturnValueBean.DataListBean;
 
 /**
  * Created by nl on 2016/11/22.

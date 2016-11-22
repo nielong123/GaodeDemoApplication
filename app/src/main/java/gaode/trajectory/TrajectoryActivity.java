@@ -1,5 +1,6 @@
 package gaode.trajectory;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -20,7 +21,7 @@ import tools.ReadStringUtil;
  * Created by nl on 2016/11/21.
  */
 
-public final class TrajectoryActivity extends AppCompatActivity implements View.OnClickListener, AMap.InfoWindowAdapter {
+public final class TrajectoryActivity extends Activity implements View.OnClickListener, AMap.InfoWindowAdapter {
 
     private Button btn1;
     private Button btn2;
@@ -30,39 +31,45 @@ public final class TrajectoryActivity extends AppCompatActivity implements View.
     private AMap aMap;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trajectory);
-        initView();
-        mapview.onCreate(savedInstanceState);
+        initView(savedInstanceState);
     }
 
     @Override
     protected void onPause() {
-        mapview.onPause();
         super.onPause();
+        mapview.onPause();
     }
 
     @Override
     protected void onResume() {
-        mapview.onResume();
         super.onResume();
+        mapview.onResume();
     }
 
 
     @Override
     protected void onDestroy() {
-        mapview.onDestroy();
         super.onDestroy();
+        mapview.onDestroy();
     }
 
-    void initView() {
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mapview.onSaveInstanceState(outState);
+    }
+
+    void initView(Bundle savedInstanceState) {
 
         btn1 = (Button) findViewById(R.id.btn1);
         btn1.setOnClickListener(this);
         btn2 = (Button) findViewById(R.id.btn2);
         btn2.setOnClickListener(this);
         mapview = (MapView) findViewById(R.id.mapview);
+        mapview.onCreate(savedInstanceState);
         aMap = mapview.getMap();
         UiSettings uiSettings = aMap.getUiSettings();
     }

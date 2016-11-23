@@ -5,12 +5,14 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.amap.api.maps.AMap;
@@ -42,7 +44,7 @@ import gaode.trajectory.TrajectRunnable.TrajectListener;
  * Created by nl on 2016/11/21.
  */
 
-public final class TrajectoryActivity extends Activity implements View.OnClickListener, AMap.InfoWindowAdapter, SeekBar.OnSeekBarChangeListener, CompoundButton.OnCheckedChangeListener {
+public final class TrajectoryActivity extends Activity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, CompoundButton.OnCheckedChangeListener {
 
     private String TAG = TrajectoryActivity.class.getName().toString().trim();
     private Button btn1;
@@ -56,6 +58,11 @@ public final class TrajectoryActivity extends Activity implements View.OnClickLi
     private SeekBar seekbar;
     private SwitchButton switchButton;
 
+    private int maxIndex, index;
+
+//    private View infoWindowView;
+
+    private AMap.InfoWindowAdapter infoWindowAdapter;
 
     private Polyline polyline;
 
@@ -112,6 +119,7 @@ public final class TrajectoryActivity extends Activity implements View.OnClickLi
         mapview = (MapView) findViewById(R.id.mapview);
         mapview.onCreate(savedInstanceState);
         aMap = mapview.getMap();
+        aMap.setInfoWindowAdapter(new CustomInfoWindowAdapter(this));
         UiSettings uiSettings = aMap.getUiSettings();
         play_image = (ImageView) findViewById(R.id.play_image);
         play_root = (RelativeLayout) findViewById(R.id.play_root);
@@ -137,6 +145,7 @@ public final class TrajectoryActivity extends Activity implements View.OnClickLi
             beanList = bean.getReturnValue().getDataList();
         }
         if (beanList.size() > 2) {
+            maxIndex = beanList.size();
             displayPolyline();
             displayMarkers();
             runnable = new TrajectRunnable(beanList.size(), trajectListener);
@@ -168,19 +177,6 @@ public final class TrajectoryActivity extends Activity implements View.OnClickLi
         }
     };
 
-    /**************
-     * Gaode Marker
-     *************/
-
-    @Override
-    public View getInfoWindow(Marker marker) {
-        return null;
-    }
-
-    @Override
-    public View getInfoContents(Marker marker) {
-        return null;
-    }
 
     /******************
      * seekbar
@@ -216,9 +212,10 @@ public final class TrajectoryActivity extends Activity implements View.OnClickLi
     private TrajectListener trajectListener = new TrajectListener() {
         @Override
         public void onUpdataPlaying(int index) {
-            seekbar.setProgress(index);
-            upDataMoveMarker(index);
-            Log.d(TAG, "index = " + index);
+            TrajectoryActivity.this.index = index;
+            seekbar.setProgress(TrajectoryActivity.this.index);
+            upDataMoveMarker(TrajectoryActivity.this.index);
+            Log.d(TAG, "index = " + TrajectoryActivity.this.index);
         }
 
         @Override
@@ -299,7 +296,9 @@ public final class TrajectoryActivity extends Activity implements View.OnClickLi
         if (moveMarker != null) {
             moveMarker.setPosition(latLng);
             moveMarker.setObject(bean);
+            moveMarker.showInfoWindow();
         }
     }
+
 
 }

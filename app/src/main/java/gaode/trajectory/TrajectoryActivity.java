@@ -11,6 +11,7 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
+import android.widget.Toast;
 
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.CameraUpdateFactory;
@@ -24,6 +25,7 @@ import com.amap.api.maps.model.Polyline;
 import com.amap.api.maps.model.PolylineOptions;
 import com.google.gson.Gson;
 import com.kyleduo.switchbutton.SwitchButton;
+import com.squareup.picasso.Picasso;
 
 import bean.Bean.ReturnValueBean.DataListBean;
 
@@ -66,6 +68,8 @@ public final class TrajectoryActivity extends Activity implements View.OnClickLi
     private List<DataListBean> beanList = new ArrayList<>();
 
     private TrajectRunnable runnable;
+
+    private boolean isPlaying = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,11 +114,10 @@ public final class TrajectoryActivity extends Activity implements View.OnClickLi
         aMap = mapview.getMap();
         UiSettings uiSettings = aMap.getUiSettings();
         play_image = (ImageView) findViewById(R.id.play_image);
-        play_image.setOnClickListener(this);
         play_root = (RelativeLayout) findViewById(R.id.play_root);
-        play_root.setOnClickListener(this);
+        play_root.setOnClickListener(playClickListener);
         seekbar = (SeekBar) findViewById(R.id.seekbar);
-        seekbar.setOnClickListener(this);
+        seekbar.setOnSeekBarChangeListener(this);
         switchButton = (SwitchButton) findViewById(R.id.switchButton);
         switchButton.setOnCheckedChangeListener(this);
     }
@@ -138,8 +141,32 @@ public final class TrajectoryActivity extends Activity implements View.OnClickLi
             displayMarkers();
             runnable = new TrajectRunnable(beanList.size(), trajectListener);
             runnable.run();
+            isPlaying = true;
+            seekbar.setMax(beanList.size());
+            seekbar.setProgress(0);
+            Picasso.with(this).load(R.drawable.stop).into(play_image);
         }
     }
+
+
+    android.view.View.OnClickListener playClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (runnable != null) {
+                if (isPlaying) {
+                    runnable.stopPlay();
+                    Picasso.with(TrajectoryActivity.this).load(R.drawable.triangle).into(play_image);
+                } else {
+                    runnable.reStartPlay();
+                    Picasso.with(TrajectoryActivity.this).load(R.drawable.stop).into(play_image);
+                }
+                isPlaying = !isPlaying;
+            } else {
+                Toast.makeText(TrajectoryActivity.this, "请选择一条轨迹", Toast.LENGTH_SHORT).show();
+            }
+
+        }
+    };
 
     /**************
      * Gaode Marker
@@ -171,7 +198,8 @@ public final class TrajectoryActivity extends Activity implements View.OnClickLi
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
-
+        Log.d(TAG, "seekBar.getProgress() = " + seekBar.getProgress());
+        runnable.setPlayIndex(seekBar.getProgress());
     }
 
     /****
@@ -188,6 +216,8 @@ public final class TrajectoryActivity extends Activity implements View.OnClickLi
     private TrajectListener trajectListener = new TrajectListener() {
         @Override
         public void onUpdataPlaying(int index) {
+            seekbar.setProgress(index);
+            upDataMoveMarker(index);
             Log.d(TAG, "index = " + index);
         }
 
@@ -203,7 +233,9 @@ public final class TrajectoryActivity extends Activity implements View.OnClickLi
 
         @Override
         public void onFinishPlaying() {
-            Log.d(TAG, "onStopPlaying");
+            Picasso.with(TrajectoryActivity.this).load(R.drawable.triangle).into(play_image);
+            isPlaying = false;
+            Log.d(TAG, "onFinishPlaying");
         }
     };
 
@@ -261,9 +293,13 @@ public final class TrajectoryActivity extends Activity implements View.OnClickLi
         endMarker.setPosition(endLatLng);
     }
 
-//    private void upDataMoveMark(int index) {
-//        if () {
-//
-//        }
-//    }
+    private void upDataMoveMarker(int index) {
+        DataListBean bean = beanList.get(index);
+        LatLng latLng = new LatLng(bean.getLat(), bean.getLon());
+        if (moveMarker != null) {
+            moveMarker.setPosition(latLng);
+            moveMarker.setObject(bean);
+        }
+    }
+
 }

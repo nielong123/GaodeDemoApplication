@@ -17,9 +17,10 @@ public final class TrajectRunnable implements Runnable {
     private static final int MOVEFINISH = 1;           //移动完成
     private static final int MOVESTOP = 2;             //停止移动
     private static final int MOVESTART = 3;            //开始移动
-    //    private static final int UPDATAMOVEINDEX = 4;          //更新运动状态
-    private static final int MOVERESTART = 5;          //重启移动
-    private static final int FORCERESTART = 6;            //强制更改到初始状态
+    private static final int MOVERESTART = 4;          //重启移动
+    private static final int FORCERESTART = 5;            //强制更改到初始状态
+
+    private static final int NOTINDEX = -1;
 
     private int playIndex, maxIndex;
     private long DELYED = 100l;
@@ -28,7 +29,7 @@ public final class TrajectRunnable implements Runnable {
     private TrajectHandler handler;
 
     public TrajectRunnable(int maxIndex, TrajectListener trajectListener) {
-        this.maxIndex = maxIndex;
+        this.maxIndex = maxIndex - 1;       //数据的集合长度要比size小1
         this.listener = trajectListener;
         this.handler = new TrajectHandler(this);
     }
@@ -38,6 +39,7 @@ public final class TrajectRunnable implements Runnable {
      */
     public void stopPlay() {
         isStop = true;
+
     }
 
     /***
@@ -45,6 +47,7 @@ public final class TrajectRunnable implements Runnable {
      */
     public void reStartPlay() {
         isStop = false;
+        handler.postDelayed(this, DELYED);
     }
 
     /****
@@ -54,31 +57,38 @@ public final class TrajectRunnable implements Runnable {
      */
     public void setPlayIndex(int index) {
         this.playIndex = index;
+        isStop = true;
     }
 
     @Override
     public void run() {
         if (maxIndex != 0) {
             if (playIndex == 0) {
-                Message msg = new Message();
-                msg.what = MOVESTART;
-                handler.sendMessage(msg);
+                sendMsg(MOVESTART, NOTINDEX);
             }
+            sendMsg(MOVEMARKER, playIndex++);
             if (playIndex == maxIndex) {
-                Message msg = new Message();
-                msg.what = MOVEFINISH;
-                handler.sendMessage(msg);
+                sendMsg(MOVEFINISH, NOTINDEX);
             }
-            Message msg = new Message();
-            msg.what = MOVEMARKER;
-            Bundle bundle = new Bundle();
-            bundle.putInt(MOVEMARKER + "", playIndex++);
-            msg.setData(bundle);
-            handler.sendMessage(msg);
             if (!isStop) {
                 handler.postDelayed(this, DELYED);
             }
         }
+    }
+
+    /****
+     * @param what
+     * @param index != -1
+     */
+    private void sendMsg(int what, int index) {
+        Message msg = new Message();
+        msg.what = what;
+        if (index != -1) {
+            Bundle bundle = new Bundle();
+            bundle.putInt("index", index);
+            msg.setData(bundle);
+        }
+        handler.sendMessage(msg);
     }
 
     class TrajectHandler extends Handler {
@@ -97,12 +107,13 @@ public final class TrajectRunnable implements Runnable {
                 case MOVEMARKER:
                     Bundle bundle = msg.getData();
                     if (runnable.listener != null) {
-                        runnable.listener.onUpdataPlaying(bundle.getInt(MOVEMARKER + ""));
+                        runnable.listener.onUpdataPlaying(bundle.getInt("index"));
                     }
                     break;
                 case MOVEFINISH:
                     playIndex = 0;
                     if (runnable.listener != null) {
+                        isStop = true;
                         runnable.listener.onFinishPlaying();
                     }
                     break;

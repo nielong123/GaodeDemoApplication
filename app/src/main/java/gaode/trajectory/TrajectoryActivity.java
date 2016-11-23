@@ -127,6 +127,7 @@ public final class TrajectoryActivity extends Activity implements View.OnClickLi
         seekbar = (SeekBar) findViewById(R.id.seekbar);
         seekbar.setOnSeekBarChangeListener(this);
         switchButton = (SwitchButton) findViewById(R.id.switchButton);
+        switchButton.setEnabled(true);
         switchButton.setOnCheckedChangeListener(this);
     }
 
@@ -206,7 +207,11 @@ public final class TrajectoryActivity extends Activity implements View.OnClickLi
      */
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-
+        if (!isChecked && moveMarker.isInfoWindowShown()) {
+            moveMarker.hideInfoWindow();
+        } else {
+            moveMarker.showInfoWindow();
+        }
     }
 
     private TrajectListener trajectListener = new TrajectListener() {
@@ -296,7 +301,11 @@ public final class TrajectoryActivity extends Activity implements View.OnClickLi
         if (moveMarker != null) {
             moveMarker.setPosition(latLng);
             moveMarker.setObject(bean);
-            moveMarker.showInfoWindow();
+            if (!switchButton.isChecked()) {
+                moveMarker.showInfoWindow();
+            } else {
+                moveMarker.hideInfoWindow();
+            }
         }
     }
 
